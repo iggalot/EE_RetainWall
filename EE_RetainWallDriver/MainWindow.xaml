@@ -9,12 +9,21 @@
 
     <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
-            <StackPanel Orientation="Vertical">
-                <Label Content="Wall Stem" FontWeight="Bold" />
-                <TextBlock x:Name="tbStemResults"/>
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical">
+                    <Label Content="Front Side Soil Depth" FontWeight="Bold" />
+                    <TextBlock x:Name="tbFrontSideSoilDepth"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <Label Content="Back Side Soil Depth" FontWeight="Bold" />
+                    <TextBlock x:Name="tbBackSideSoilDepth"/>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
-
+        <StackPanel Orientation="Vertical">
+            <Label Content="Wall Stem" FontWeight="Bold" />
+            <TextBlock x:Name="tbStemResults"/>
+        </StackPanel>
         <StackPanel Orientation="Horizontal">
             <Label Content="Ka" FontWeight="Bold" />
             <TextBlock x:Name="tbKa"/>

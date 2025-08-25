@@ -2,47 +2,63 @@
 
 namespace EE_RetainWallLibrary
 {
-    public static class RetainWallCalculator
+    public class RetainWallCalculator
     {
-        public static RetWallModel Create(
-            double ht,
-            SiteDataModel site_data,
-            SoilParametersModel soil_parameters)
+        public double OverTurningMoment { get; set; } = 0;
+
+
+
+
+        public static double ComputeMo_WallStem(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil )
         {
-            var new_wall = new RetWallModel();
-            new_wall.Height = ht;
-
-            new_wall.wallStemActivePressure = ComputeActivePressureOnWallStem(new_wall, site_data, soil_parameters);
-            new_wall.wallStemPassivePressure = ComputePassivePressureOnWallStem(new_wall, site_data, soil_parameters);
-
-            return new_wall;
+            return 0.0;
         }
 
-        public static PressureBlockDataModel ComputeActivePressureOnWallStem(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+
+
+
+
+
+
+        public static double ToeSoilWeight(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
         {
-            var model = new PressureBlockDataModel();
-            var press_ht = wall.Height - site_data.SoilSurfaceDepthBehind;
-
-            model.Pressure1 = soil.Ka * soil.Density * 0;
-            model.Pressure2 = soil.Ka * soil.Density * (press_ht);
-            model.Location = site_data.SoilSurfaceDepthBehind;
-            model.Distance = (press_ht);
-
-            return model;
+            return wall.ToeLength * (wall.Height - site_data.SoilSurfaceDepthFront) * soil.Density;
         }
 
-        public static PressureBlockDataModel ComputePassivePressureOnWallStem(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+        public static double ToeSoilCentroidFromToe(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
         {
-            var model = new PressureBlockDataModel();
-            var press_ht = wall.Height - site_data.SoilSurfaceDepthFront;
+            return wall.ToeLength + wall.WidthBot / 12.0 + 0.5 * wall.HeelLength;
+        }
 
+        public static double ToeSoilOverturningMomentAboutToe(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+        {
+            return ToeSoilWeight(wall, site_data, soil) * ToeSoilCentroidFromToe(wall, site_data, soil);
+        }
 
-            model.Pressure1 = soil.Kp * soil.Density * 0;
-            model.Pressure2 = soil.Kp * soil.Density * (press_ht);
-            model.Location = site_data.SoilSurfaceDepthFront;
-            model.Distance = (press_ht);
+        public static double HeelSoilWeight(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+        {
+            return wall.HeelLength * (wall.Height-site_data.SoilSurfaceDepthBehind) * soil.Density;
+        }
 
-            return model;
+        public static double HeelSoilCentroidFromToe(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+        {
+            return wall.ToeLength + wall.WidthBot / 12.0 + 0.5 * wall.HeelLength;
+        }
+
+        public static double HeelSoilOverturningMomentAboutToe(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+        {
+            return HeelSoilWeight(wall, site_data, soil) * HeelSoilCentroidFromToe(wall, site_data, soil);
+        }
+
+        public double ComputeSystemOverturningMoment(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+        {
+
+            return wall.ComputeOverturningMomentAboutToe() + HeelSoilOverturningMomentAboutToe(wall, site_data, soil) + ToeSoilOverturningMomentAboutToe(wall, site_data, soil);
+        }
+
+        public double ComputeSystemVerticalLoad(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
+        {
+            return wall.BaseSlabWeight() + wall.StemWeight() + wall.KeyWeight() + HeelSoilWeight(wall, site_data, soil) + ToeSoilWeight(wall, site_data, soil); 
         }
     }
 }

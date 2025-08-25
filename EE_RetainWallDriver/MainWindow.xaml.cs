@@ -26,10 +26,10 @@ namespace EE_RetainWallDriver
 
         private void LoadTestScenarioData()
         {
-            SiteDataModel site_data = new SiteDataModel(10, 0);
+            SiteDataModel site_data = new SiteDataModel(5,0);
             SoilParametersModel soil_parameters = new SoilParametersModel();
 
-            RetWallModel model = RetainWallCalculator.Create(10.0, site_data, soil_parameters);
+            RetWallModel model = RetWallModel.Create(10.0, site_data, soil_parameters);
 
 
             _site_data = site_data;
@@ -47,11 +47,11 @@ namespace EE_RetainWallDriver
 
         private void DisplaySoilProperties()
         {
+            tbFrontSideSoilDepth.Text = _site_data.SoilSurfaceDepthFront.ToString() + "ft";
+            tbBackSideSoilDepth.Text = _site_data.SoilSurfaceDepthBehind.ToString() + "ft";
             tbGamma.Text = _soil_parameters.Density.ToString();
             tbKa.Text = _soil_parameters.Ka.ToString();
             tbKp.Text = _soil_parameters.Kp.ToString();
-
-
         }
     }
 }
