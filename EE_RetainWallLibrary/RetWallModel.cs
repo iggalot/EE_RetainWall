@@ -1,4 +1,6 @@
-﻿namespace EE_RetainWallLibrary
+﻿using System;
+
+namespace EE_RetainWallLibrary
 {
     public class RetWallModel
     {
@@ -18,9 +20,10 @@
         /// Lateral Pressures on the wall stem, footing, and key
         /// </summary>
         public PressureBlockDataModel wallStemActivePressure { get; set; }
+        public PressureBlockDataModel wallStemPassivePressure { get; set; }
+
         public PressureBlockDataModel wallFootingActivePressure { get; set; }
         public PressureBlockDataModel wallKeyActivePressure { get; set; }
-        public PressureBlockDataModel wallStemPassivePressure { get; set; }
         public PressureBlockDataModel wallFootingPassivePressure { get; set; }
         public PressureBlockDataModel wallKeyPassivePressure { get; set; }
 
@@ -30,7 +33,18 @@
         public PressureBlockDataModel wallHeelPressure { get; set; }
         public PressureBlockDataModel wallKeyPressure { get; set; }
         public PressureBlockDataModel wallToePressure { get; set; }
-    }
 
+        public double Mo_Stem { get; set; }
+        public double V_Stem { get; set; }
+
+        public string DisplayInfo()
+        {
+            string str = String.Empty;
+            str += $"\nWallStem: Ht: {Height}";
+            str += "\n--" + wallStemActivePressure.DisplayInfo();
+            str += "\n--" + wallStemPassivePressure.DisplayInfo();
+
+            return str;
+        }
     }
 }

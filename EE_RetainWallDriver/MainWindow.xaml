@@ -6,7 +6,26 @@
         xmlns:local="clr-namespace:EE_RetainWallDriver"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
 
-    </Grid>
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
+                <Label Content="Wall Stem" FontWeight="Bold" />
+                <TextBlock x:Name="tbStemResults"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Ka" FontWeight="Bold" />
+            <TextBlock x:Name="tbKa"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Kp" FontWeight="Bold" />
+            <TextBlock x:Name="tbKp"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Gamma" FontWeight="Bold" />
+            <TextBlock x:Name="tbGamma"/>
+        </StackPanel>
+    </StackPanel>
 </Window>

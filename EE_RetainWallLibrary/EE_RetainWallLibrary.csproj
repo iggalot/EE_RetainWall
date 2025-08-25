@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PressureBlockDataModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RebarDetailsModel.cs" />
     <Compile Include="RetainWallCalculator.cs" />
