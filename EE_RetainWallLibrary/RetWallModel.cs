@@ -1,22 +1,55 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace EE_RetainWallLibrary
 {
-    public class RetWallModel
+    public class RetWallModel : INotifyPropertyChanged, IDataErrorInfo
     {
         private double concrete_density = 150; // pcf
-        public double Height { get; set; }  // ft
-        public double Base { get; set; } // ft
-        public double WidthTop { get; set; } // in.
-        public double WidthBot { get; set; } // in.
-        public double StemKeyDepth { get; set; }  // in.
-        public double StemKeyWidth { get; set; }  // in.
-        public double ToeLength { get; set; }  // in.
-        public double FootingThick { get; set; } = 12;  // in.
-        public double HeelLength { get; set; } // in. 
-        public double KeyDepth { get; set; } = 12; // in.
-        public double KeyWidth { get; set; } // in.
-        
+        private double _height;
+        private double _base;
+        private double _widthTop;
+        private double _widthBot;
+        private double _toeLength;
+        private double _footingThick = 12;
+        private double _heelLength;
+        private double _keyDepth = 12;
+        private double _keyWidth;
+
+        public double Height { get => _height; set { _height = value; OnPropertyChanged(nameof(Height)); } }
+        public double Base { get => _base; set { _base = value; OnPropertyChanged(nameof(Base)); } }
+        public double WidthTop { get => _widthTop; set { _widthTop = value; OnPropertyChanged(nameof(WidthTop)); } }
+        public double WidthBot { get => _widthBot; set { _widthBot = value; OnPropertyChanged(nameof(WidthBot)); } }
+        public double ToeLength { get => _toeLength; set { _toeLength = value; OnPropertyChanged(nameof(ToeLength)); } }
+        public double FootingThick { get => _footingThick; set { _footingThick = value; OnPropertyChanged(nameof(FootingThick)); } }
+        public double HeelLength { get => _heelLength; set { _heelLength = value; OnPropertyChanged(nameof(HeelLength)); } }
+        public double KeyDepth { get => _keyDepth; set { _keyDepth = value; OnPropertyChanged(nameof(KeyDepth)); } }
+        public double KeyWidth { get => _keyWidth; set { _keyWidth = value; OnPropertyChanged(nameof(KeyWidth)); } }
+
+        public string this[string columnName]
+        {
+            get
+            {
+                switch (columnName)
+                {
+                    case nameof(Height):
+                        return Height <= 0 ? "Height must be positive (ft)." : null;
+                    case nameof(Base):
+                        return Base <= 0 ? "Base must be positive (ft)." : null;
+                    case nameof(FootingThick):
+                        return FootingThick < 6 ? "Footing thickness should be ≥ 6 in." : null;
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public string Error => null;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged(string name) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
         /// <summary>
         /// Lateral Pressures on the wall stem, footing, and key
         /// </summary>

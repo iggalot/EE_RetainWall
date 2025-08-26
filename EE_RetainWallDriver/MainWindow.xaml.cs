@@ -12,6 +12,8 @@ namespace EE_RetainWallDriver
         private SiteDataModel _site_data;
         private SoilParametersModel _soil_parameters;
 
+        public PressureResultsModel Results { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -22,6 +24,8 @@ namespace EE_RetainWallDriver
         private void AppLoaded(object sender, RoutedEventArgs e)
         {
             LoadTestScenarioData();
+
+            retainingWallDimensionsControl.Content = new RetainingWallDimensionsControl(_model);
         }
 
         private void LoadTestScenarioData()
@@ -38,11 +42,25 @@ namespace EE_RetainWallDriver
 
             DisplayWallStem(model);
             DisplaySoilProperties();
+
+            Results = new PressureResultsModel
+            {
+                WallStemActivePressure = _model.wallStemActivePressure,
+                WallStemPassivePressure = _model.wallStemPassivePressure,
+                WallFootingActivePressure = _model.wallFootingActivePressure,
+                WallFootingPassivePressure = _model.wallFootingPassivePressure,
+                WallKeyActivePressure = _model.wallKeyActivePressure,
+                WallKeyPassivePressure = _model.wallKeyPassivePressure,
+                WallHeelPressure = _model.wallHeelPressure,
+                WallKeyPressure = _model.wallKeyPressure,
+                WallToePressure = _model.wallToePressure
+            };
+
+            pressureResultsControl.DataContext = Results;
         }
 
         private void DisplayWallStem(RetWallModel model)
         {
-            tbStemResults.Text = model.DisplayInfo();
         }
 
         private void DisplaySoilProperties()

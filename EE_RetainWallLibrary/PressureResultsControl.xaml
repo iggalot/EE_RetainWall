@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="EE_RetainWallLibrary.PressureResultsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:EE_RetainWallLibrary"
+             Height="Auto" Width="Auto">
+
+    <Border BorderBrush="Gray" BorderThickness="1" Padding="8" CornerRadius="4">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <WrapPanel Orientation="Horizontal">
+                <local:PressureBlockDisplayControl DataContext="{Binding WallStemActivePressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallStemPassivePressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallFootingActivePressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallFootingPassivePressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallKeyActivePressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallKeyPassivePressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallHeelPressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallKeyPressure}"/>
+                <local:PressureBlockDisplayControl DataContext="{Binding WallToePressure}"/>
+            </WrapPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

@@ -4,6 +4,7 @@ namespace EE_RetainWallLibrary
 {
     public class PressureBlockDataModel
     {
+        public string Name { get; set; }
         public double Pressure1 { get; set; }
         public double Pressure2 { get; set; }
         public double Distance { get; set; } // width of the pressure block

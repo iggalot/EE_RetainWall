@@ -1,24 +1,13 @@
-﻿using System;
-
-namespace EE_RetainWallLibrary
+﻿namespace EE_RetainWallLibrary
 {
     public class RetainWallCalculator
     {
         public double OverTurningMoment { get; set; } = 0;
 
-
-
-
         public static double ComputeMo_WallStem(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil )
         {
             return 0.0;
         }
-
-
-
-
-
-
 
         public static double ToeSoilWeight(RetWallModel wall, SiteDataModel site_data, SoilParametersModel soil)
         {
