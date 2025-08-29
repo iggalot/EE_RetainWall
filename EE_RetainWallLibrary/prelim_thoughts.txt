@@ -1,0 +1,388 @@
+﻿using System;
+
+public class GravityWallWithOptions
+{
+    public class WallDesign
+    {
+        public double BaseWidth;
+        public double ToeLength;
+        public double HeelLength;
+        public double StemThicknessTop;
+        public double StemThicknessBottom;
+        public double FS_Overturning;
+        public double FS_Sliding;
+        public double FS_Bearing;
+        public double MaxSoilPressure;
+        public double Eccentricity;
+        public bool UsesPiers;
+        public double? PierDiameter;
+        public double? PierEmbedment;
+        public bool LimitsPassiveResistance;
+    }
+
+    public static WallDesign DesignWall(
+        double H,
+        double phi,
+        double gammaSoil,
+        double Q,
+        double qBear,
+        bool usePiers = false,
+        double pierDiameter = 0.5,
+        bool limitPassiveResistance = false
+    )
+    {
+        double gammaConcrete = 24; // kN/m³
+        double mu = 0.5;           // Friction coefficient (concrete/soil)
+        double Ka = Math.Pow(Math.Tan(Math.PI / 4 - phi * Math.PI / 360), 2);
+        double Kp = Math.Pow(Math.Tan(Math.PI / 4 + phi * Math.PI / 360), 2);
+        double passiveFactor = limitPassiveResistance ? 0.4 : 1.0;
+
+        double Pa = 0.5 * gammaSoil * H * H * Ka;
+        double surchargeForce = Q * Ka * H;
+        double totalLateral = Pa + surchargeForce;
+
+        double PaY = H / 3;
+        double PsurchargeY = H / 2;
+
+        double minBase = 0.5 * H;
+        double maxBase = 0.8 * H;
+
+        for (double B = minBase; B <= maxBase; B += 0.05)
+        {
+            double toe = B / 3;
+            double heel = 2 * B / 3;
+            double stemTop = 0.05 * H;
+            double stemBottom = 0.1 * H;
+
+            double stemVolume = 0.5 * (stemTop + stemBottom) * H;
+            double baseVolume = B * stemBottom;
+            double weight = (stemVolume + baseVolume) * gammaConcrete;
+
+            double resistingMoment = weight * (toe + stemBottom / 2);
+            double overturningMoment = Pa * PaY + surchargeForce * PsurchargeY;
+            double fsOverturning = resistingMoment / overturningMoment;
+
+            // Sliding resistance
+            double frictionalResistance = weight * mu;
+            double pierResistance = 0;
+            double? embedment = null;
+
+            if (usePiers)
+            {
+                embedment = 1.5 * pierDiameter;
+                double fullPassive = 0.5 * gammaSoil * Kp * pierDiameter * embedment.Value * embedment.Value;
+                pierResistance = passiveFactor * fullPassive;
+            }
+            else
+            {
+                // Shear key under wall
+                double shearKeyWidth = 0.2 * B;
+                double shearKeyDepth = 0.4;
+                double fullPassive = 0.5 * gammaSoil * shearKeyDepth * shearKeyDepth;
+                pierResistance = passiveFactor * fullPassive * shearKeyWidth;
+
+                // Add shear key weight
+                weight += (shearKeyWidth * shearKeyDepth) * gammaConcrete;
+            }
+
+            double fsSliding = (frictionalResistance + pierResistance) / totalLateral;
+
+            // Bearing check
+            double netVertical = weight;
+            double netMoment = resistingMoment - overturningMoment;
+            double e = netMoment / netVertical;
+
+            if (Math.Abs(e) >= B / 6)
+                continue; // eccentricity too large (tension zone at base)
+
+            double sigmaMax = (netVertical / B) * (1 + (6 * e / B));
+            double sigmaMin = (netVertical / B) * (1 - (6 * e / B));
+
+            if (sigmaMax > qBear || sigmaMin < 0)
+                continue; // bearing pressure unsafe
+
+            return new WallDesign
+            {
+                BaseWidth = B,
+                ToeLength = toe,
+                HeelLength = heel,
+                StemThicknessTop = stemTop,
+                StemThicknessBottom = stemBottom,
+                FS_Overturning = fsOverturning,
+                FS_Sliding = fsSliding,
+                FS_Bearing = qBear / sigmaMax,
+                MaxSoilPressure = sigmaMax,
+                Eccentricity = e,
+                UsesPiers = usePiers,
+                PierDiameter = usePiers ? pierDiameter : null,
+                PierEmbedment = usePiers ? embedment : null,
+                LimitsPassiveResistance = limitPassiveResistance
+            };
+        }
+
+        throw new Exception("No safe design found within trial dimensions.");
+    }
+
+    public static void Main()
+    {
+        // === INPUT PARAMETERS ===
+        double H = 5.0;             // Wall height (m)
+        double phi = 30.0;          // Soil friction angle (degrees)
+        double gammaSoil = 18.0;    // Soil unit weight (kN/m³)
+        double Q = 10.0;            // Surcharge load (kN/m²)
+        double qBear = 200.0;       // Allowable bearing pressure (kN/m²)
+
+        bool usePiers = true;       // Toggle piers on/off
+        double pierDia = 0.6;       // Pier diameter (m)
+        bool limitPassive = true;   // Toggle limited passive resistance
+
+        // === RUN DESIGN ===
+        var design = DesignWall(H, phi, gammaSoil, Q, qBear, usePiers, pierDia, limitPassive);
+
+        // === DISPLAY OUTPUT ===
+        Console.WriteLine("=== GRAVITY RETAINING WALL DESIGN ===");
+        Console.WriteLine($"Wall Height: {H} m");
+        Console.WriteLine($"Surcharge Load: {Q} kN/m²");
+        Console.WriteLine($"Using Piers: {design.UsesPiers}");
+        Console.WriteLine($"Limited Passive Resistance: {design.LimitsPassiveResistance}");
+        if (design.UsesPiers)
+        {
+            Console.WriteLine($"Pier Diameter: {design.PierDiameter:F2} m");
+            Console.WriteLine($"Pier Embedment: {design.PierEmbedment:F2} m");
+        }
+        Console.WriteLine($"Base Width: {design.BaseWidth:F2} m");
+        Console.WriteLine($"Toe Length: {design.ToeLength:F2} m");
+        Console.WriteLine($"Heel Length: {design.HeelLength:F2} m");
+        Console.WriteLine($"Stem Thickness Top: {design.StemThicknessTop:F2} m");
+        Console.WriteLine($"Stem Thickness Bottom: {design.StemThicknessBottom:F2} m");
+        Console.WriteLine($"FS Overturning: {design.FS_Overturning:F2}");
+        Console.WriteLine($"FS Sliding: {design.FS_Sliding:F2}");
+        Console.WriteLine($"FS Bearing: {design.FS_Bearing:F2}");
+        Console.WriteLine($"Max Soil Pressure: {design.MaxSoilPressure:F2} kN/m²");
+        Console.WriteLine($"Eccentricity: {design.Eccentricity:F3} m");
+    }
+}
+
+
+To Use:
+bool usePiers = true;        // true = use piers, false = use shear key
+bool limitPassive = true;    // true = reduce passive resistance
+double pierDia = 0.6;        // pier size (m)
+
+
+
+
+
+/// For drawing the results:
+//////////////////////////////
+Assembly reference: System.Drawing
+Add using System.Drawing
+
+public static void DrawWallDiagram(GravityWallWithOptions.WallDesign design, string filename)
+{
+    int width = 800;
+    int height = 600;
+    Bitmap bmp = new Bitmap(width, height);
+    Graphics g = Graphics.FromImage(bmp);
+    g.Clear(Color.White);
+
+    Pen black = new Pen(Color.Black, 2);
+    Brush concrete = Brushes.LightGray;
+    Font font = new Font("Arial", 10);
+
+    // Scale: 1m = 100 pixels
+    float scale = 100f;
+    float originX = 100;
+    float originY = height - 100;
+
+    float wallHeight = (float)(design.StemThicknessBottom + 5) * scale;
+    float baseWidth = (float)design.BaseWidth * scale;
+
+    // Draw base
+    g.FillRectangle(concrete, originX, originY - wallHeight, baseWidth, (float)design.StemThicknessBottom * scale);
+    g.DrawRectangle(black, originX, originY - wallHeight, baseWidth, (float)design.StemThicknessBottom * scale);
+
+    // Draw stem (trapezoid)
+    PointF[] stem = new PointF[]
+    {
+        new PointF(originX + design.ToeLength * scale, originY - wallHeight),
+        new PointF(originX + design.ToeLength * scale + design.StemThicknessTop * scale, originY - wallHeight - (float)5 * scale),
+        new PointF(originX + design.ToeLength * scale + design.StemThicknessBottom * scale, originY - wallHeight - (float)5 * scale),
+        new PointF(originX + design.ToeLength * scale, originY - wallHeight)
+    };
+    g.FillPolygon(concrete, stem);
+    g.DrawPolygon(black, stem);
+
+    // Shear key
+    if (!design.UsesPiers)
+    {
+        float shearKeyWidth = 0.2f * (float)design.BaseWidth * scale;
+        float shearKeyHeight = 0.4f * scale;
+        float keyX = originX + design.ToeLength * scale;
+        float keyY = originY - (float)design.StemThicknessBottom * scale;
+
+        g.FillRectangle(Brushes.DarkGray, keyX, keyY, shearKeyWidth, shearKeyHeight);
+        g.DrawRectangle(Pens.Black, keyX, keyY, shearKeyWidth, shearKeyHeight);
+        g.DrawString("Shear Key", font, Brushes.Black, keyX, keyY + shearKeyHeight + 5);
+    }
+
+    // Piers
+    if (design.UsesPiers)
+    {
+        float pierDia = (float)design.PierDiameter.Value * scale;
+        float pierEmbed = (float)design.PierEmbedment.Value * scale;
+        float pierX = originX + design.ToeLength * scale + 0.5f * pierDia;
+        float pierY = originY;
+
+        g.FillEllipse(Brushes.DarkSlateGray, pierX, pierY, pierDia, pierEmbed);
+        g.DrawEllipse(black, pierX, pierY, pierDia, pierEmbed);
+        g.DrawString("Pier", font, Brushes.Black, pierX, pierY + pierEmbed + 5);
+    }
+
+    // Dimension labels
+    g.DrawString($"Base Width = {design.BaseWidth:F2} m", font, Brushes.Black, 10, 10);
+    g.DrawString($"Wall Height = 5.0 m", font, Brushes.Black, 10, 30);
+
+    bmp.Save(filename);
+    bmp.Dispose();
+    g.Dispose();
+}
+
+
+public static void DrawForcesDiagram(GravityWallWithOptions.WallDesign design, string filename)
+{
+    int width = 800;
+    int height = 600;
+    Bitmap bmp = new Bitmap(width, height);
+    Graphics g = Graphics.FromImage(bmp);
+    g.Clear(Color.White);
+
+    Pen arrowPen = new Pen(Color.Red, 2);
+    arrowPen.EndCap = System.Drawing.Drawing2D.LineCap.ArrowAnchor;
+    Font font = new Font("Arial", 10);
+    float scale = 100f;
+    float originX = 100;
+    float originY = height - 100;
+
+    float wallHeight = 5.0f * scale;
+    float baseWidth = (float)design.BaseWidth * scale;
+
+    // Draw wall rectangle
+    g.FillRectangle(Brushes.LightGray, originX, originY - wallHeight, baseWidth, wallHeight);
+
+    // Active pressure triangle
+    PointF[] pressureTri = new PointF[]
+    {
+        new PointF(originX, originY - wallHeight),
+        new PointF(originX, originY),
+        new PointF(originX + 0.4f * scale, originY)
+    };
+    g.FillPolygon(Brushes.SkyBlue, pressureTri);
+    g.DrawPolygon(Pens.Blue, pressureTri);
+    g.DrawString("Active Earth Pressure", font, Brushes.Blue, originX + 5, originY - wallHeight / 2);
+
+    // Surcharge arrow
+    g.DrawLine(arrowPen, originX + baseWidth / 2, originY - wallHeight - 20, originX + baseWidth / 2, originY - wallHeight);
+    g.DrawString("Q", font, Brushes.Red, originX + baseWidth / 2 + 5, originY - wallHeight - 30);
+
+    // Wall weight arrow
+    g.DrawLine(arrowPen, originX + baseWidth / 2, originY - wallHeight / 2, originX + baseWidth / 2, originY - wallHeight / 2 + 50);
+    g.DrawString("W", font, Brushes.Red, originX + baseWidth / 2 + 5, originY - wallHeight / 2 + 20);
+
+    // Passive resistance arrow (if used)
+    if (design.UsesPiers || !design.UsesPiers)
+    {
+        g.DrawLine(arrowPen, originX + baseWidth, originY, originX + baseWidth + 30, originY);
+        g.DrawString("Passive", font, Brushes.Red, originX + baseWidth + 5, originY - 20);
+    }
+
+    bmp.Save(filename);
+    bmp.Dispose();
+    g.Dispose();
+}
+
+/// How to use...
+DrawWallDiagram(design, "wall_diagram.png");
+DrawForcesDiagram(design, "force_diagram.png");
+Console.WriteLine("Diagrams saved as wall_diagram.png and force_diagram.png");
+
+
+// For zoom and scaling ofthe images
+public static void DrawWallDiagram(WallDesign design, string filename, float scale = 100f)
+
+float wallHeight = 5.0f * scale;
+
+DrawWallDiagram(design, "wall_diagram.png", scale: 150f);
+
+// Numerical force values...In DrawForceDiagram():
+double Pa, double surchargeForce, double weight
+
+g.DrawString($"Pₐ = {Pa:F1} kN", font, Brushes.Blue, originX + 50, originY - wallHeight / 2);
+g.DrawString($"q = {surchargeForce:F1} kN", font, Brushes.Red, originX + baseWidth / 2 + 10, originY - wallHeight - 40);
+g.DrawString($"W = {weight:F1} kN", font, Brushes.Red, originX + baseWidth / 2 + 10, originY - wallHeight / 2 + 60);
+
+
+// PDF support
+NuGet package PdfSHarp
+Install-Package PdfSharp -Version 1.50.5147
+
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
+
+public static void ExportPdf(string wallImage, string forceImage, WallDesign design)
+{
+    var doc = new PdfDocument();
+    var page = doc.AddPage();
+    page.Width = 595; // A4
+    page.Height = 842;
+    XGraphics gfx = XGraphics.FromPdfPage(page);
+
+    gfx.DrawString("Retaining Wall Design Summary", new XFont("Arial", 14), XBrushes.Black, new XRect(0, 20, page.Width, 40), XStringFormats.TopCenter);
+
+    string[] lines = new[]
+    {
+        $"Wall Height: 5.0 m",
+        $"Base Width: {design.BaseWidth:F2} m",
+        $"FS Overturning: {design.FS_Overturning:F2}",
+        $"FS Sliding: {design.FS_Sliding:F2}",
+        $"FS Bearing: {design.FS_Bearing:F2}",
+        $"Eccentricity: {design.Eccentricity:F3} m",
+        $"Max Soil Pressure: {design.MaxSoilPressure:F2} kN/m²",
+        $"Using Piers: {design.UsesPiers}, Limited Passive: {design.LimitsPassiveResistance}"
+    };
+
+    double y = 60;
+    foreach (var line in lines)
+    {
+        gfx.DrawString(line, new XFont("Arial", 10), XBrushes.Black, new XRect(40, y, 500, 20));
+        y += 15;
+    }
+
+    // Draw images (scale to fit)
+    XImage img1 = XImage.FromFile(wallImage);
+    XImage img2 = XImage.FromFile(forceImage);
+
+    gfx.DrawImage(img1, 50, 200, 220, 160);
+    gfx.DrawImage(img2, 300, 200, 220, 160);
+
+    doc.Save("RetainingWallReport.pdf");
+}
+
+/// Tie it all together in Main():
+var design = DesignWall(...);
+
+// Compute forces
+double gammaSoil = 18;
+double H = 5.0;
+double phi = 30;
+double Ka = Math.Pow(Math.Tan(Math.PI / 4 - phi * Math.PI / 360), 2);
+double Pa = 0.5 * gammaSoil * H * H * Ka;
+double surchargeForce = 10 * Ka * H;
+double weight = (design.BaseWidth * design.StemThicknessBottom + 0.5 * (design.StemThicknessTop + design.StemThicknessBottom) * H) * 24;
+
+DrawWallDiagram(design, "wall_diagram.png", scale: 150f);
+DrawForcesDiagram(design, "force_diagram.png", Pa, surchargeForce, weight, scale: 150f);
+
+ExportPdf("wall_diagram.png", "force_diagram.png", design);
+Console.WriteLine("PDF report saved as RetainingWallReport.pdf");
+
