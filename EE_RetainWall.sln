@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EE_RetainWallLibrary", "EE_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EE_RetainWallDriver", "EE_RetainWallDriver\EE_RetainWallDriver.csproj", "{A4553BB5-F901-421D-ACB6-BEE169E362C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACI318_19Library", "..\ACI318_19Library\ACI318_19Library.csproj", "{EF65150E-C9D4-4D2D-AF2C-5F7BF62D76E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{A4553BB5-F901-421D-ACB6-BEE169E362C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4553BB5-F901-421D-ACB6-BEE169E362C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4553BB5-F901-421D-ACB6-BEE169E362C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF65150E-C9D4-4D2D-AF2C-5F7BF62D76E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF65150E-C9D4-4D2D-AF2C-5F7BF62D76E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF65150E-C9D4-4D2D-AF2C-5F7BF62D76E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF65150E-C9D4-4D2D-AF2C-5F7BF62D76E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

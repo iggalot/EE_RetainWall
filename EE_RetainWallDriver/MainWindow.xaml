@@ -4,39 +4,108 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EE_RetainWallLibrary;assembly=EE_RetainWallLibrary"
+        xmlns:aci318="clr-namespace:ACI318_19Library;assembly=ACI318_19Library"
+        x:Name="MainWin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="800">
+        Title="MainWindow" Height="1000" Width="1600">
 
-    <StackPanel Orientation="Vertical">
-        <StackPanel Orientation="Horizontal">
-            <StackPanel Orientation="Horizontal">
-                <StackPanel Orientation="Vertical">
-                    <Label Content="Front Side Soil Depth" FontWeight="Bold" />
-                    <TextBlock x:Name="tbFrontSideSoilDepth"/>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Site Info -->
+            <RowDefinition Height="*"/>
+            <!-- Main Content -->
+        </Grid.RowDefinitions>
+
+        <!-- Site Info -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Front/Back Soil Depth -->
+            <StackPanel Grid.Column="0" Orientation="Vertical">
+                <Label Content="Front Side Soil Depth" FontWeight="Bold"/>
+                <TextBlock x:Name="tbFrontSideSoilDepth"/>
+                <Label Content="Back Side Soil Depth" FontWeight="Bold" Margin="0,8,0,0"/>
+                <TextBlock x:Name="tbBackSideSoilDepth"/>
+            </StackPanel>
+
+            <!-- Wall Stem -->
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <Label Content="Wall Stem" FontWeight="Bold"/>
+                <TextBlock x:Name="tbStemResults"/>
+            </StackPanel>
+
+            <!-- Soil Parameters -->
+            <StackPanel Grid.Column="2" Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Ka" FontWeight="Bold"/>
+                    <TextBlock x:Name="tbKa" Margin="4,0,0,0"/>
                 </StackPanel>
-                <StackPanel Orientation="Vertical">
-                    <Label Content="Back Side Soil Depth" FontWeight="Bold" />
-                    <TextBlock x:Name="tbBackSideSoilDepth"/>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <Label Content="Kp" FontWeight="Bold"/>
+                    <TextBlock x:Name="tbKp" Margin="4,0,0,0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                    <Label Content="Gamma" FontWeight="Bold"/>
+                    <TextBlock x:Name="tbGamma" Margin="4,0,0,0"/>
                 </StackPanel>
             </StackPanel>
-        </StackPanel>
-        <StackPanel Orientation="Vertical">
-            <Label Content="Wall Stem" FontWeight="Bold" />
-            <TextBlock x:Name="tbStemResults"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label Content="Ka" FontWeight="Bold" />
-            <TextBlock x:Name="tbKa"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label Content="Kp" FontWeight="Bold" />
-            <TextBlock x:Name="tbKp"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <Label Content="Gamma" FontWeight="Bold" />
-            <TextBlock x:Name="tbGamma"/>
-        </StackPanel>
-        <local:RetainingWallDimensionsControl x:Name="retainingWallDimensionsControl" />
-        <local:PressureResultsControl x:Name="pressureResultsControl" />
-    </StackPanel>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="500"/>
+                <!-- Inputs -->
+                <ColumnDefinition Width="500"/>
+                <!-- Concrete Design Results -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- Cross Section & Designs -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Column: Inputs / Controls -->
+            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,10,0">
+                <Button Content="Enter Cross Section for Analysis"
+                        Click="btnEnterCrossSectionButton_Click" Margin="0,0,0,8"/>
+                <local:RetainingWallDimensionsControl x:Name="retainingWallDimensionsControl" Margin="0,0,0,8"/>
+                <local:PressureResultsControl x:Name="pressureResultsControl"
+                                              DataContext="{Binding PressureResults}"/>
+            </StackPanel>
+
+            <!-- Middle Column: Concrete Design Results -->
+            <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,10,0">
+                <Label Content="Concrete Design Results" FontWeight="Bold"/>
+                <TextBlock Text="{Binding ConcreteDesignResults.ConcreteDesignInfo}" 
+                           FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- Right Column: Cross Section Canvas & Valid Designs -->
+            <StackPanel Grid.Column="2" Orientation="Vertical">
+                <Border BorderBrush="Black" BorderThickness="1" Margin="0,0,0,8">
+                    <Canvas x:Name="cnvCrossSection" Width="200" Height="200" Background="White"/>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Label Content="Valid Designs for Mu =" FontWeight="Bold" FontSize="12"/>
+                    <Label Content="{Binding Mu_kipin}" FontWeight="Bold" FontSize="12" Margin="4,0,0,0"/>
+                    <Label Content="kip-in --- " FontWeight="Bold" FontSize="12" Margin="4,0,0,0"/>
+                    <Label Content="{Binding NumDesignResults}" FontWeight="Bold" FontSize="12" Margin="4,0,0,0"/>
+                    <Label Content="results found." FontWeight="Bold" FontSize="12" Margin="4,0,0,0"/>
+                </StackPanel>
+
+                <ListBox x:Name="lbValidDesigns"
+                         ItemsSource="{Binding DesignResults}" 
+                         DisplayMemberPath="ResultSummary"
+                         SelectedItem="{Binding CurrentSelection, Mode=TwoWay}"
+                         SelectionMode="Single"
+                         Height="200" Margin="0,0,0,8"/>
+
+                <aci318:DesignResultControl Result="{Binding CurrentSelection}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Window>

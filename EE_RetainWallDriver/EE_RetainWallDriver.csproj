@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ACI318_19Library\ACI318_19Library.csproj" />
     <ProjectReference Include="..\EE_RetainWallLibrary\EE_RetainWallLibrary.csproj" />
   </ItemGroup>
 

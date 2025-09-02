@@ -47,6 +47,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="PressureBlockDataModel.cs" />
     <Compile Include="PressureBlockDisplayControl.xaml.cs">
       <DependentUpon>PressureBlockDisplayControl.xaml</DependentUpon>
@@ -83,6 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="prelim_thoughts.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\ACI318_19Library\ACI318_19Library.csproj">
+      <Project>{EF65150E-C9D4-4D2D-AF2C-5F7BF62D76E7}</Project>
+      <Name>ACI318_19Library</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
